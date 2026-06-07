@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' file:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'" />
+  <title>Ideogram 4 Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="titlebar">
+    <div class="wordmark"><span class="wordmark-serif">Ideogram&nbsp;4</span><span class="wordmark-mono">/STUDIO</span></div>
+    <div class="titlebar-right">
+      <span id="device-badge" class="badge">LOCAL · MPS</span>
+      <button id="btn-settings" class="ghost-btn" title="API keys & paths">⌘ KEYS</button>
+    </div>
+  </header>
+
+  <!-- ════════════════ SETUP VIEW ════════════════ -->
+  <main id="view-setup" class="view hidden">
+    <div class="setup-grid">
+      <section class="setup-left">
+        <p class="kicker">FIRST RUN · DEVELOPMENT PROCESS</p>
+        <h1 class="setup-title"><em>Preparing</em> the darkroom</h1>
+        <p class="setup-sub">One-time environment setup. The model repo is cloned, an isolated
+          Python&nbsp;3.12 venv is created, and dependencies are installed — nothing touches your system Python.</p>
+
+        <ol class="steps" id="steps">
+          <li class="step" data-id="tools"><span class="step-dot"></span><span class="step-num">01</span><span class="step-label">Toolchain <small>git · uv</small></span><span class="step-state">WAITING</span></li>
+          <li class="step" data-id="repo"><span class="step-dot"></span><span class="step-num">02</span><span class="step-label">Clone repository <small>ideogram-oss/ideogram4</small></span><span class="step-state">WAITING</span></li>
+          <li class="step" data-id="venv"><span class="step-dot"></span><span class="step-num">03</span><span class="step-label">Virtual environment <small>python 3.12 · isolated</small></span><span class="step-state">WAITING</span></li>
+          <li class="step" data-id="deps"><span class="step-dot"></span><span class="step-num">04</span><span class="step-label">Install dependencies <small>torch · transformers · accelerate</small></span><span class="step-state">WAITING</span></li>
+          <li class="step" data-id="verify"><span class="step-dot"></span><span class="step-num">05</span><span class="step-label">Verify Apple&nbsp;Silicon GPU <small>torch.backends.mps</small></span><span class="step-state">WAITING</span></li>
+        </ol>
+
+        <div class="token-block">
+          <label class="field-label" for="setup-hf">HUGGING FACE TOKEN <span class="req">— required, weights are gated</span></label>
+          <input id="setup-hf" type="password" class="text-input" placeholder="hf_····················" autocomplete="off" spellcheck="false" />
+          <p class="hint">Accept the license at <a href="#" data-url="https://huggingface.co/ideogram-ai/ideogram-4-fp8" class="link">ideogram-ai/ideogram-4-fp8</a>, then paste a read token from <a href="#" data-url="https://huggingface.co/settings/tokens" class="link">hf.co/settings/tokens</a>.</p>
+        </div>
+
+        <button id="btn-setup" class="primary-btn">BEGIN SETUP ↦</button>
+        <p id="setup-error" class="error-text hidden"></p>
+      </section>
+
+      <section class="setup-right">
+        <div class="log-head"><span class="log-led" id="setup-led"></span> PROCESS LOG</div>
+        <pre id="setup-log" class="logpane">— idle. press BEGIN SETUP —</pre>
+      </section>
+    </div>
+  </main>
+
+  <!-- ════════════════ STUDIO VIEW ════════════════ -->
+  <main id="view-studio" class="view hidden">
+    <aside class="rail">
+      <p class="kicker">EXPOSURE</p>
+      <label class="field-label" for="prompt">PROMPT</label>
+      <textarea id="prompt" class="text-input prompt-area" rows="6" spellcheck="false"
+        placeholder="a ginger cat wearing a tiny wizard hat, reading a spellbook…"></textarea>
+
+      <div class="row2">
+        <div><label class="field-label" for="width">WIDTH</label>
+          <input id="width" type="number" class="text-input" value="1024" step="16" min="256" max="2048" /></div>
+        <div><label class="field-label" for="height">HEIGHT</label>
+          <input id="height" type="number" class="text-input" value="1024" step="16" min="256" max="2048" /></div>
+      </div>
+
+      <div class="row2">
+        <div><label class="field-label" for="preset">SAMPLER</label>
+          <select id="preset" class="text-input"></select></div>
+        <div><label class="field-label" for="seed">SEED</label>
+          <input id="seed" type="number" class="text-input" value="0" min="0" /></div>
+      </div>
+
+      <button id="btn-generate" class="primary-btn">EXPOSE ◉</button>
+      <button id="btn-cancel" class="ghost-btn wide hidden">ABORT —</button>
+      <p id="gen-error" class="error-text hidden"></p>
+
+      <div class="rail-foot">
+        <div class="log-head"><span class="log-led" id="gen-led"></span> INFERENCE LOG</div>
+        <pre id="gen-log" class="logpane logpane-small">— ready —</pre>
+      </div>
+    </aside>
+
+    <section class="lighttable">
+      <div class="canvas-frame" id="canvas-frame">
+        <div id="canvas-empty" class="canvas-empty">
+          <div class="reticle"></div>
+          <p>NO EXPOSURE YET</p>
+        </div>
+        <img id="canvas-img" class="canvas-img hidden" alt="generated image" />
+        <div id="canvas-working" class="canvas-working hidden">
+          <div class="safelight"></div>
+          <p id="working-label">DEVELOPING…</p>
+        </div>
+      </div>
+      <div class="strip-head">
+        <span>CONTACT SHEET</span>
+        <button id="btn-outputs" class="ghost-btn">OPEN FOLDER ↗</button>
+      </div>
+      <div id="history" class="strip"></div>
+    </section>
+  </main>
+
+  <!-- ════════════════ SETTINGS DRAWER ════════════════ -->
+  <div id="settings" class="drawer hidden">
+    <div class="drawer-panel">
+      <h2 class="drawer-title"><em>Keys</em> &amp; credentials</h2>
+      <label class="field-label" for="key-hf">HUGGING FACE TOKEN</label>
+      <input id="key-hf" type="password" class="text-input" placeholder="hf_····················" autocomplete="off" />
+      <label class="field-label" for="key-ideo">IDEOGRAM API KEY <span class="req">— optional, enables magic prompt</span></label>
+      <input id="key-ideo" type="password" class="text-input" placeholder="from developer.ideogram.ai" autocomplete="off" />
+      <p class="hint">Without an Ideogram key, generation runs with <code>--no-magic-prompt</code>. The model was
+        trained on structured JSON captions, so plain prompts may be weaker without magic-prompt expansion.</p>
+      <div class="row2">
+        <button id="btn-save-keys" class="primary-btn">SAVE</button>
+        <button id="btn-close-settings" class="ghost-btn wide">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

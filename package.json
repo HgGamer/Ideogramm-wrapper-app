@@ -1,0 +1,23 @@
+{
+  "name": "ideogram4-studio",
+  "version": "1.0.0",
+  "description": "Run Ideogram 4 locally on your Mac",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "dev.local.ideogram4studio",
+    "productName": "Ideogram 4 Studio",
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": ["dir", "dmg"]
+    },
+    "files": ["src/**/*"]
+  }
+}
